@@ -12,7 +12,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.packages.urllib3.util.retry import Retry
 import os
 from urllib.parse import urlparse, parse_qs, urlunparse, urlencode
-import datetime
+from datetime import datetime
 import time
 from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 from optparse import OptionParser
@@ -56,8 +56,7 @@ def commonCrawl(domain, results):
     printOP((client, "Start", domain))
     for ccindex in cCrawlIndexs:
         try:
-            print(ccindex["cdx-api"]+"?url={}/*&output=textfilter=~url:.*=".format(domain))
-            rep = req.get(ccindex["cdx-api"]+"?url={}/*&output=textfilter=~url:.*=".format(domain))
+            rep = req.get(ccindex["cdx-api"]+"?url={}/*&output=text&filter=~url:.*=&fl=url".format(domain))
             if rep.status_code == 200:
                 printOP((client, "urlScan", domain))
                 urlScanWorker(rep.text.splitlines(), results, client, domain)
@@ -171,7 +170,7 @@ def printOP(ops):
         output = "| "
         for op in ops:
             output += op+" | "
-        print(output+str(datetime.datetime.now())+" |")
+        print("| "+str(datetime.now().strftime('%H:%M:%S'))+" "+output)
     elif options.outputStyle == 1:
         if ops[1] == "Result":
             print(ops[2])
@@ -180,7 +179,29 @@ def printOP(ops):
             output = "| "
             for op in ops:
                 output += op+" | "
-            print(output+str(datetime.datetime.now())+" |")
+            print("| "+str(datetime.now().strftime('%H:%M:%S'))+" "+output)
+    elif options.outputStyle == 3:
+        if ops[1] != "Error":
+            output = "| "
+            for op in ops:
+                output += op+" | "
+            print("| "+str(datetime.now().strftime('%H:%M:%S'))+" "+output)
+
+def header():
+    os.system('clear')
+    title = '''
+________________________________________________________________________________
+                              _  _ _ _  _  _ ____ ____ ____ 
+                              |\ | | |\ |  | |__/ |___ |___ 
+                              | \| | | \| _| |  \ |___ |    
+________________________________________________________________________________
+
+About:-
+Author: sheryar (ninjhacks)
+Version : 1.0.0
+________________________________________________________________________________
+    '''
+    print ('\033[01;32m' + title + '\033[01;37m')
 
 if __name__ == "__main__":
     parser = OptionParser(usage="%prog: [options]")
@@ -215,6 +236,9 @@ req.headers.update({
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36"
 })
 
+if options.outputStyle != 1:
+    header()
+
 outputDir = options.outputDir
 if options.domain != None:
     domains = {options.domain}
@@ -229,6 +253,7 @@ else:
 tD = len(domains)
 payload = options.payload
 filters = ""
+fillterList = []#need somthing more
 WBlimit = options.wbLimit
 threadCount = options.threads
 optSessions = []
