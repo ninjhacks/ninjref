@@ -22,13 +22,15 @@ def wayBack(domain, results):
     client = "WayBack"
     printOP((client, "Start", domain))
     if options.subdomain == True:
-        domain =  "*."+domain
+        domain_ = "*."+domain
+    else:
+        domain_ = domain
     try:
         rKey =  True
         resumeKey = ""
         urlScanCount = 0
         while rKey:
-            wurl = "http://web.archive.org/cdx/search/cdx?url={}/*&collapse=urlkey&output=json&fl=original&filter=~mimetype:javascript&filter=!statuscode:302&filter=!statuscode:400&filter=!statuscode:500&filter=~original:=&showResumeKey=true&limit={}&resumeKey={}".format(domain, WBlimit,resumeKey)
+            wurl = "http://web.archive.org/cdx/search/cdx?url={}/*&collapse=urlkey&output=json&fl=original&filter=~original:={}&showResumeKey=true&limit={}&resumeKey={}".format(domain_, filters, WBlimit,resumeKey)
             rep = req.get(wurl, stream=True)
             if rep.status_code == 200:
                 if rep.json() != []:
@@ -54,9 +56,13 @@ def wayBack(domain, results):
 def commonCrawl(domain, results):
     client = "commonCrawl"
     printOP((client, "Start", domain))
+    if options.subdomain == True:
+        domain_ = "*."+domain
+    else:
+        domain_ = domain
     for ccindex in cCrawlIndexs:
         try:
-            rep = req.get(ccindex["cdx-api"]+"?url={}/*&output=text&filter=~url:.*=&fl=url".format(domain))
+            rep = req.get(ccindex["cdx-api"]+"?url={}/*&output=text&filter=~url:.*=&fl=url{}".format(domain_, filters))
             if rep.status_code == 200:
                 printOP((client, "urlScan", domain))
                 urlScanWorker(rep.text.splitlines(), results, client, domain)
@@ -253,7 +259,7 @@ else:
 tD = len(domains)
 payload = options.payload
 filters = ""
-fillterList = []#need somthing more
+filterList = []#need somthing more
 WBlimit = options.wbLimit
 threadCount = options.threads
 optSessions = []
