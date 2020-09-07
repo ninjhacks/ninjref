@@ -124,7 +124,7 @@ def cCrawlIndex():
             printOP((client, "Error", rep.status_code))
             return False
     except requests.RequestException as err:
-        printOP((client, "Error", err))
+        printOP((client, "Error", str(err)))
         return False
 
 def urlScanWorker(urls, results, client, domain):
