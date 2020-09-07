@@ -30,7 +30,7 @@ def wayBack(domain, results):
         resumeKey = ""
         urlScanCount = 0
         while rKey:
-            wurl = "http://web.archive.org/cdx/search/cdx?url={}/*&collapse=urlkey&output=json&fl=original&filter=~original:={}&showResumeKey=true&limit={}&resumeKey={}".format(domain_, filters, WBlimit,resumeKey)
+            wurl = "http://web.archive.org/cdx/search/cdx?url={}/*&collapse=urlkey&output=json&fl=original&filter=~original:={}&filter=~url:.*=&showResumeKey=true&limit={}&resumeKey={}".format(domain_, filters, WBlimit,resumeKey)
             rep = req.get(wurl, stream=True)
             if rep.status_code == 200:
                 if rep.json() != []:
@@ -214,13 +214,12 @@ if __name__ == "__main__":
     parser.add_option( "-d","--domain", dest="domain", help="domain (Example : example.com)")
     parser.add_option("-f", "--file", dest="file",  help="Domains File (Example : domains.txt)")
     parser.add_option("--od", dest="outputDir", default="output", help="Output Dir (default : output)")
-    parser.add_option("-o", "--output", dest="output", help="Output File (default : domain.json)")
-    parser.add_option( "--sd", dest="subdomain", action='store_true', help="Subdomain (default : False)")
-    parser.add_option( "--scan", dest="scan", action='store_true', help="Scan for reflected parameters (default : False)")
+    parser.add_option("-o", "--output", dest="output", help="Output File (optional)")
+    parser.add_option( "--sd", dest="subdomain", action='store_true', help="Subdomain (optional)")
     parser.add_option( "-p" , "--providers", dest="providers", default="wayback commoncrawl", help="Select Providers (default : wayback commoncrawl)")
     parser.add_option( "-t" , "--threads", dest="threads", default=1, type=int, help="Set main threads counts (default : 1)")
-    parser.add_option( "--st", dest="scanThreads", default=2, type=int, help="Set scan threads counts (default : 2)")
-    parser.add_option( "--filter", dest="filter", help="Set filter on providers (Example : statuscode:200 !statuscode:404)")
+    parser.add_option( "--st", dest="scanThreads", default=10, type=int, help="Set scan threads counts (default : 10)")
+    parser.add_option( "--filter", dest="filter", default="statuscode:200 ~mime:.*html", help="Set filter on providers (default : statuscode:200 ~mime:.*html)")
     parser.add_option( "--payload", dest="payload", default="ninjhacks", help="Payload use in scan (default : ninjhacks)")
     parser.add_option( "--wbl", dest="wbLimit", default=10000, type=int, help="Wayback results per request (default : 10000)")
     parser.add_option( "--ops", dest="outputStyle", default=0, type=int, help="Output Style (default : 0)")
@@ -259,7 +258,6 @@ else:
 tD = len(domains)
 payload = options.payload
 filters = ""
-filterList = []#need somthing more
 WBlimit = options.wbLimit
 threadCount = options.threads
 optSessions = []
@@ -289,7 +287,6 @@ futures = [ threadpool.submit(worker, domain) for domain in domains]
 try:
     for i, _ in enumerate(as_completed(futures)):
         i +=1
-        #if i == tD or i % threadCount == 0:
         printOP(("Domains","Remaning: "+str(tD-i),"Completed: "+str(i)))
 except KeyboardInterrupt:
     if options.output == None:
