@@ -3,8 +3,9 @@
 About:-
 Author: sheryar (ninjhacks)
 Created on : 07/05/2020
+Last Update : 29/09/2020
 Program : Ninjref
-Version : 1.0.0
+Version : 1.1.0
 """
 import requests
 from requests.adapters import HTTPAdapter
@@ -30,7 +31,7 @@ def wayBack(domain, results):
         resumeKey = ""
         urlScanCount = 0
         while rKey:
-            wurl = "http://web.archive.org/cdx/search/cdx?url={}/*&collapse=urlkey&output=json&fl=original&filter=~original:={}&filter=~url:.*=&showResumeKey=true&limit={}&resumeKey={}".format(domain_, filters, WBlimit,resumeKey)
+            wurl = "http://web.archive.org/cdx/search/cdx?url={}/*&collapse=urlkey&output=json&fl=original&filter=~original:={}&showResumeKey=true&limit={}&resumeKey={}".format(domain_, wbFilters, WBlimit,resumeKey)
             rep = req.get(wurl, stream=True)
             if rep.status_code == 200:
                 if rep.json() != []:
@@ -62,7 +63,7 @@ def commonCrawl(domain, results):
         domain_ = domain
     for ccindex in cCrawlIndexs:
         try:
-            rep = req.get(ccindex["cdx-api"]+"?url={}/*&output=text&filter=~url:.*=&fl=url{}".format(domain_, filters))
+            rep = req.get(ccindex["cdx-api"]+"?url={}/*&output=text&filter=~url:.*=&fl=url{}".format(domain_, ccFilters))
             if rep.status_code == 200:
                 printOP((client, "urlScan", domain))
                 urlScanWorker(rep.text.splitlines(), results, client, domain)
@@ -204,7 +205,7 @@ ________________________________________________________________________________
 
 About:-
 Author: sheryar (ninjhacks)
-Version : 1.0.0
+Version : 1.1.0
 ________________________________________________________________________________
     '''
     print ('\033[01;32m' + title + '\033[01;37m')
@@ -219,7 +220,8 @@ if __name__ == "__main__":
     parser.add_option( "-p" , "--providers", dest="providers", default="wayback commoncrawl", help="Select Providers (default : wayback commoncrawl)")
     parser.add_option( "-t" , "--threads", dest="threads", default=1, type=int, help="Set main threads counts (default : 1)")
     parser.add_option( "--st", dest="scanThreads", default=10, type=int, help="Set scan threads counts (default : 10)")
-    parser.add_option( "--filter", dest="filter", default="statuscode:200 ~mime:.*html", help="Set filter on providers (default : statuscode:200 ~mime:.*html)")
+    parser.add_option( "--wbf", dest="wbfilter", default="statuscode:200 ~mimetype:html", help="Set filters on wayback api (default : statuscode:200 ~mimetype:html)")
+    parser.add_option( "--ccf", dest="ccfilter", default="=status:200 ~mime:.*html", help="Set filters on commoncrawl api (default : =status:200 ~mime:.*html)")
     parser.add_option( "--payload", dest="payload", default="ninjhacks", help="Payload use in scan (default : ninjhacks)")
     parser.add_option( "--wbl", dest="wbLimit", default=10000, type=int, help="Wayback results per request (default : 10000)")
     parser.add_option( "--ops", dest="outputStyle", default=0, type=int, help="Output Style (default : 0)")
@@ -257,7 +259,8 @@ else:
 
 tD = len(domains)
 payload = options.payload
-filters = ""
+wbFilters = ""
+ccFilters = ""
 WBlimit = options.wbLimit
 threadCount = options.threads
 optSessions = []
@@ -266,8 +269,14 @@ wBack =  False
 for provider in options.providers.split():
     if provider == "commoncrawl":
         cCrawl = True
+        if options.ccfilter != None:    
+            for f in options.ccfilter.split():
+                ccFilters = ccFilters+"&filter="+f
     elif provider == "wayback":
         wBack = True
+        if options.wbfilter != None:    
+            for f in options.wbfilter.split():
+                wbFilters = wbFilters+"&filter="+f
     else:
         printOP(("System", "Error", "Provider Not Found"))
         printOP(("System", "Info", "use -p wayback Or not use -p"))
@@ -277,10 +286,6 @@ if not cCrawl | wBack:
 
 if cCrawl:
     cCrawlIndexs = cCrawlIndex()
-
-if options.filter != None:    
-    for f in options.filter.split():
-        filters = filters+"&filter="+f
 
 threadpool = ThreadPoolExecutor(max_workers=threadCount, thread_name_prefix='')
 futures = [ threadpool.submit(worker, domain) for domain in domains]
