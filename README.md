@@ -46,7 +46,8 @@ This will display help for the tool.
 |         -p        |         Providers (default : wayback commoncrawl)     |              ninjref -p wayback                 |
 |         -t        |           Main threads counts (default : 1)           |              ninjref -t 1                       |
 |       --st        |           Scan threads (default : 10)                 |              ninjref --st 10                    |
-|      --filter     |      Filter (default : statuscode:200 ~mime:.*html)   |              ninjref --filter statuscode:200    |
+|      --wbf        |            (default : statuscode:200 ~mimetype:html)  |              ninjref --filter statuscode:200    |
+|      --ccf        |            (default : =status:200 ~mime:.*html)       |              ninjref --filter =status:200       |
 |     --payload     |      Payload use in scan (default : ninjhacks)        |              ninjref -p ninjhacks               |
 |       --wbl       |      Wayback results per request (default : 10000)    |              ninjref --wbl 1000                 |
 |       --ops       |            Output Style (default : 0))                |              ninjref --ops 0                    |
@@ -67,14 +68,14 @@ Output style is use for result output on console.
 3 = not errors in output.
 #### Filters
 Filters directly use on providers to get only useful filtered data from provider to do faster scan and take less power.
-|        Filter     |                      Description                              |
-| :---------------: | :-----------------------------------------------------------: |
-|statuscode:200     | return only those urls which status code is 200               |
-|!statuscode:200    | return only non 200 status code                               |
-|mimetype:text/html | return only those url which response type is text/html        |
-|!mimetype:text/html| return only non text/html response type                       |
-|~mime:.*html       | return all those url which have html word in response type    |
-|~url:.*ninja       | return all those url which have ninja word in url             |
+|      Wayback      |    Commoncrawl    |                      Description                              |
+| :---------------: | :---------------: | :-----------------------------------------------------------: |
+|statuscode:200     |   =status:200     | return only those urls which status code is 200               |
+|!statuscode:200    |   !=status:200    | return only non 200 status code                               |
+|mimetype:text/html |  mime:text/html   | return only those url which response type is text/html        |
+|!mimetype:text/html|  !=mime:text/html | return only non text/html response type                       |
+|~mimetype:html     |   ~mime:.*html    | return all those url which have html word in response type    |
+|~original:ninja    |   ~url:.*ninja    | return all those url which have ninja word in url             |
 
 ## 📄License
 
