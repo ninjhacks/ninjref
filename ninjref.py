@@ -3,9 +3,9 @@
 About:-
 Author: sheryar (ninjhacks)
 Created on : 07/05/2020
-Last Update : 29/09/2020
+Last Update : 21/10/2020
 Program : Ninjref
-Version : 1.1.0
+Version : 1.2.0
 """
 import requests
 from requests.adapters import HTTPAdapter
@@ -61,16 +61,15 @@ def commonCrawl(domain, results):
         domain_ = "*."+domain
     else:
         domain_ = domain
-    for ccindex in cCrawlIndexs:
-        try:
-            rep = req.get(ccindex["cdx-api"]+"?url={}/*&output=text&filter=~url:.*=&fl=url{}".format(domain_, ccFilters))
-            if rep.status_code == 200:
-                printOP((client, "urlScan", domain))
-                urlScanWorker(rep.text.splitlines(), results, client, domain)
-            elif rep.status_code != 404:
-                printOP((client, "Error", domain, ccindex["cdx-api"][37:], response.status_code))
-        except requests.RequestException as err:
-            printOP((client ,"Error", domain, str(err)))
+    try:
+        rep = req.get(cCrawlIndexs+"?url={}/*&output=text&filter=~url:.*=&fl=url{}".format(domain_, ccFilters))
+        if rep.status_code == 200:
+            printOP((client, "urlScan", domain))
+            urlScanWorker(rep.text.splitlines(), results, client, domain)
+        elif rep.status_code != 404:
+            printOP((client, "Error", domain, response.status_code))
+    except requests.RequestException as err:
+        printOP((client ,"Error", domain, str(err)))
     printOP((client, "End", domain))
 
 def paramChecker(url, value):
@@ -120,7 +119,7 @@ def cCrawlIndex():
         rep = req.get("http://index.commoncrawl.org/collinfo.json")
         if rep.status_code == 200:
             printOP((client, "End"))
-            return rep.json()
+            return rep.json()[0]["cdx-api"]
         else:
             printOP((client, "Error", rep.status_code))
             return False
@@ -205,7 +204,7 @@ ________________________________________________________________________________
 
 About:-
 Author: sheryar (ninjhacks)
-Version : 1.1.0
+Version : 1.2.0
 ________________________________________________________________________________
     '''
     print ('\033[01;32m' + title + '\033[01;37m')
@@ -296,7 +295,6 @@ try:
 except KeyboardInterrupt:
     if options.output == None:
         for domain in optSessions:
-            print(domain)
             opFileHandler("close", domain)
     else:
         opFileHandler("close", options.output)
