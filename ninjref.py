@@ -3,9 +3,9 @@
 About:-
 Author: sheryar (ninjhacks)
 Created on : 07/05/2020
-Last Update : 21/10/2020
+Last Update : 22/10/2020
 Program : Ninjref
-Version : 1.2.0
+Version : 1.3.0
 """
 import requests
 from requests.adapters import HTTPAdapter
@@ -32,13 +32,14 @@ def wayBack(domain, results):
         urlScanCount = 0
         while rKey:
             wurl = "http://web.archive.org/cdx/search/cdx?url={}/*&collapse=urlkey&output=json&fl=original&filter=~original:={}&showResumeKey=true&limit={}&resumeKey={}".format(domain_, wbFilters, WBlimit,resumeKey)
+            print(wurl)
             rep = req.get(wurl, stream=True)
             if rep.status_code == 200:
                 if rep.json() != []:
                     urlScanCount += 1
                     printOP((client, "urlScan "+str(urlScanCount), domain))
                     if rep.json()[-2] == []:
-                        resumeKey = rep.json()[-1]
+                        resumeKey = rep.json()[-1][0]
                         urls = [url[0] for url in rep.json()[1:-2]]
                     else:
                         rKey = False
@@ -204,7 +205,7 @@ ________________________________________________________________________________
 
 About:-
 Author: sheryar (ninjhacks)
-Version : 1.2.0
+Version : 1.3.0
 ________________________________________________________________________________
     '''
     print ('\033[01;32m' + title + '\033[01;37m')
